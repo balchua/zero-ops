@@ -9,3 +9,9 @@ edition = "2021"
 sqlx = { version = "0.7.1", features = ["runtime-tokio-native-tls", "sqlite"] }
 tokio = { version = "1.31.0", features = ["full"] }
 actix-web = "4"
+thiserror = "1"
+anyhow = "1.0.72"
+slog = "2.7.0"
+slog-envlogger = "2.2.0"
+slog-json = "2.6.1"
+slog-async = "2.7.0"

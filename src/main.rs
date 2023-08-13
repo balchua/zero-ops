@@ -1,46 +1,41 @@
-use std::{env, path::PathBuf};
+#[macro_use]
+extern crate slog;
+extern crate slog_async;
+extern crate slog_json;
 
-use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
+use actix_web::{web, App, HttpRequest, HttpServer};
+use anyhow::Result;
 
+mod db;
+mod events;
+mod initializer;
+mod migration;
+mod state;
 const DB_URL: &str = "sqlite://data/events.db";
 
-mod events;
+#[actix_web::main]
+async fn main() -> Result<()> {
+    let _guard = slog_envlogger::init().unwrap();
+    let log = initializer::init(DB_URL).await;
+    let migrator = migration::Migrator::new(DB_URL, log.clone());
+    migrator.migrate().await?;
+    let db_pool = db::db_connect(DB_URL).await;
 
-#[tokio::main]
-async fn main() {
-    if !Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
-        println!("Creating database {}", DB_URL);
-        match Sqlite::create_database(DB_URL).await {
-            Ok(_) => println!("Create db success"),
-            Err(error) => panic!("error: {}", error),
-        }
-    } else {
-        println!("Database already exists");
-    }
-
-    let db = SqlitePool::connect(DB_URL).await.unwrap();
-    let working_dir = get_current_working_dir();
-
-    match working_dir {
-        Err(e) => panic!("cannot find current working directory {}", e),
-        Ok(p) => {
-            let migrations = p.join("./migrations");
-            let migration_results = sqlx::migrate::Migrator::new(migrations)
-                .await
-                .unwrap()
-                .run(&db)
-                .await;
-            match migration_results {
-                Ok(_) => println!("Migration success"),
-                Err(error) => {
-                    panic!("error: {}", error);
-                }
-            }
-            println!("migration: {:?}", migration_results);
-        }
-    }
+    let s = state::State { sql: db_pool };
+    let raw: state::AppStateRaw = state::AppStateRaw::new(s);
+    let state: state::AppState = state::AppState::new(raw);
+    // start HTTP server on port 8080
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(state.clone()))
+            .route("/{name}", web::get().to(index))
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
+    .map_err(anyhow::Error::from)
 }
 
-fn get_current_working_dir() -> std::io::Result<PathBuf> {
-    env::current_dir()
+async fn index(_req: HttpRequest) -> &'static str {
+    "Hello world!"
 }
