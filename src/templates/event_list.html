@@ -1,0 +1,16 @@
+<table>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Active</th>
+        <th>Created</th>
+    </tr>
+    {% for event in events %}
+    <tr>
+        <td>{{ id }}</td>
+        <td>{{ name }}</td>
+        <td>{{ active }}</td>
+        <td>{{ created_date }}</td>
+    </tr>
+    {% endfor %}
+</table>
