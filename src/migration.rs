@@ -18,19 +18,16 @@ pub enum MigrationError {
 
 pub struct Migrator {
     db_url: String,
-    logger: slog::Logger,
 }
 
 impl Migrator {
-    pub fn new(db_url: &str, logger: slog::Logger) -> Self {
+    pub fn new(db_url: &str) -> Self {
         Migrator {
             db_url: db_url.to_string(),
-            logger: logger,
         }
     }
 
     pub async fn migrate(&self) -> Result<(), MigrationError> {
-        info!(self.logger, "migration begin");
         let db: SqlPool = SqlPool::connect(&self.db_url).await.unwrap();
         let working_dir = crate::migration::get_current_working_dir();
 
@@ -44,10 +41,7 @@ impl Migrator {
                     .run(&db)
                     .await;
                 match migration_results {
-                    Ok(_) => {
-                        info!(self.logger, "migration complete");
-                        Ok(())
-                    }
+                    Ok(_) => Ok(()),
                     Err(error) => Err(MigrationError::InvalidMigration(error.to_string())),
                 }
             }

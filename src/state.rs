@@ -4,6 +4,3 @@ pub type SqlPool = sqlx::SqlitePool;
 pub struct State {
     pub sql: SqlPool,
 }
-
-pub type AppStateRaw = std::sync::Arc<State>;
-pub type AppState = actix_web::web::Data<AppStateRaw>;

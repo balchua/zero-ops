@@ -1,23 +1,20 @@
-use slog::{Drain, Logger};
 use sqlx::migrate::MigrateDatabase;
+use tracing::debug;
+use tracing_subscriber::EnvFilter;
 
 pub type Sql = sqlx::Sqlite;
 
-pub async fn init(db_url: &str) -> Logger {
-    let drain = slog_json::Json::new(std::io::stdout())
-        .set_pretty(true)
-        .add_default_keys()
-        .build()
-        .fuse();
-    let drain = slog_async::Async::new(drain).build().fuse();
-    let log = slog::Logger::root(drain, o!("format" => "pretty"));
+pub async fn init(db_url: &str) {
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .json()
+        .init();
 
     if !Sql::database_exists(db_url).await.unwrap_or(false) {
-        debug!(log, "Creating database {}", db_url);
+        debug!("Creating database {}", db_url);
         match Sql::create_database(db_url).await {
-            Ok(_) => debug!(log, "Create db success"),
+            Ok(_) => debug!("Create db success"),
             Err(error) => panic!("error: {}", error),
         }
     }
-    log
 }
