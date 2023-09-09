@@ -1,6 +1,7 @@
 use std::{env, path::PathBuf};
 
 use thiserror::Error;
+use tracing::{error, info};
 
 use crate::state::SqlPool;
 
@@ -34,6 +35,7 @@ impl Migrator {
         match working_dir {
             Err(e) => Err(MigrationError::DbPathNotFound(e.to_string())),
             Ok(p) => {
+                info!("migration in progress");
                 let migrations = p.join("./migrations");
                 let migration_results = sqlx::migrate::Migrator::new(migrations)
                     .await
@@ -41,8 +43,14 @@ impl Migrator {
                     .run(&db)
                     .await;
                 match migration_results {
-                    Ok(_) => Ok(()),
-                    Err(error) => Err(MigrationError::InvalidMigration(error.to_string())),
+                    Ok(_) => {
+                        info!("migration complete");
+                        Ok(())
+                    }
+                    Err(error) => {
+                        error!("migration error: {}", error);
+                        Err(MigrationError::InvalidMigration(error.to_string()))
+                    }
                 }
             }
         }
