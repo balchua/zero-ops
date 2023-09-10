@@ -2,7 +2,6 @@ use std::net::SocketAddr;
 
 use axum::{routing::get, Router};
 
-use minijinja::Environment;
 use tracing::info;
 
 mod db;
@@ -23,10 +22,7 @@ async fn main() {
 
     // build our application with a route
     let app = Router::new()
-        .route(
-            "/event/:event_id",
-            get(events::routes::EventRoutes::show_event),
-        )
+        .route("/event/:event_id", get(events::routes::show_event))
         .with_state(conn);
     //.with_state(templates_env);
 
