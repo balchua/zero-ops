@@ -54,7 +54,7 @@ pub async fn show_event(
 pub async fn add_event(
     app_state: State<AppState>,
     Form(event_input): Form<EventInput>,
-) -> (StatusCode) {
+) -> StatusCode {
     let e = event_input;
     let event = Event {
         id: 0,
