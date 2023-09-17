@@ -1,1 +1,0 @@
-INSERT INTO EVENTS (id, name, active) VALUES (1, 'INIT_EVENT', 1);

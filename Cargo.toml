@@ -6,7 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sqlx = { version = "0.7.1", features = ["runtime-tokio-native-tls", "sqlite"] }
+sqlx = { version = "0.7.1", features = [
+    "runtime-tokio-native-tls",
+    "sqlite",
+    "macros",
+    "chrono",
+] }
 tokio = { version = "1.31.0", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
@@ -16,3 +21,4 @@ axum = "0.6.20"
 minijinja = "1.0.7"
 serde_json = "1.0.68"
 serde = { version = "1.0.130", features = ["derive"] }
+chrono = { version = "0.4.31", features = ["serde"] }

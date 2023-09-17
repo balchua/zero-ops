@@ -4,10 +4,13 @@ use axum::{routing::get, Router};
 
 use tracing::info;
 
+use crate::state::AppState;
+
 mod db;
 mod events;
 mod initializer;
 mod migration;
+mod platform;
 mod state;
 
 const DB_URL: &str = "sqlite://data/events.db";
@@ -19,12 +22,15 @@ async fn main() {
     migrator.migrate().await.unwrap();
 
     let conn = db::db_connect(DB_URL).await;
-
+    let app_state = AppState::new(conn.clone());
     // build our application with a route
     let app = Router::new()
         .route("/event/:event_id", get(events::routes::show_event))
-        .with_state(conn);
-    //.with_state(templates_env);
+        .route(
+            "/platform/:platform_id",
+            get(platform::routes::show_platform),
+        )
+        .with_state(app_state);
 
     // run it
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

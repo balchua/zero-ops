@@ -3,27 +3,25 @@ use axum::{
     response::Html,
 };
 use minijinja::{context, Environment};
-use tracing::info;
+use tracing::{error, info};
 
-use crate::state::SqlPool;
-
-use super::repository::EventRepository;
+use crate::state::AppState;
 
 pub struct EventRoutes {}
 
 impl EventRoutes {}
 
-pub async fn show_event(Path(event_id): Path<i32>, State(pool): State<SqlPool>) -> Html<String> {
-    let result = EventRepository::new(pool).find_by_id(event_id).await;
+pub async fn show_event(
+    Path(event_id): Path<i32>,
+    State(app_state): State<AppState>,
+) -> Html<String> {
+    let result = app_state.event_store.find_by_id(event_id).await;
 
     match result {
-        Some(event) => {
+        Ok(event) => {
             info!(
                 "id: {}, name: {}, active: {}, date: {}",
-                event.id(),
-                event.name(),
-                event.active(),
-                event.created_date()
+                event.id, event.name, event.active, event.created_date
             );
             // initialize our templates
             let mut templates_env = Environment::new();
@@ -35,8 +33,8 @@ pub async fn show_event(Path(event_id): Path<i32>, State(pool): State<SqlPool>) 
             let rendered = template.render(&context).unwrap();
             Html(rendered)
         }
-        None => {
-            info!("event not found");
+        Err(err) => {
+            error!("event not found: {}", err);
             Html(String::from("event not found"))
         }
     }

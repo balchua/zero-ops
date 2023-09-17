@@ -1,0 +1,31 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Platform</title>
+    <meta name="description" content="Event">
+    <meta name="author" content="SitePoint">
+    <div>
+        <h2>{{ platform.id }} : {{ platform.name }} </h2>
+    </div>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Active</th>
+            <th>Created</th>
+        </tr>
+        {% for event in platform.events %}
+        <tr>
+            <td>{{ event.id }}</td>
+            <td>{{ event.name }}</td>
+            <td>{{ event.active }}</td>
+            <td>{{ event.created_date }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</html>
