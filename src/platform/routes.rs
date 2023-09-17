@@ -1,5 +1,6 @@
 use axum::{
     extract::{Path, State},
+    http::StatusCode,
     response::Html,
 };
 use minijinja::{context, Environment};
@@ -10,7 +11,7 @@ use crate::state::AppState;
 pub async fn show_platform(
     Path(platform_id): Path<i32>,
     State(app_state): State<AppState>,
-) -> Html<String> {
+) -> (StatusCode, Html<String>) {
     let platform = app_state.platform_service.get_platform(platform_id).await;
 
     match platform {
@@ -27,11 +28,14 @@ pub async fn show_platform(
             let template = templates_env.get_template("show_platform").unwrap();
             let context = context! {platform => platform};
             let rendered = template.render(&context).unwrap();
-            Html(rendered)
+            (StatusCode::OK, Html(rendered))
         }
         Err(err) => {
             error!("platform not found: {}", err);
-            Html(String::from("platform not found"))
+            (
+                StatusCode::NOT_FOUND,
+                Html(String::from("platform not found")),
+            )
         }
     }
 }

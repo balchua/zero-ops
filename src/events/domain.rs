@@ -6,4 +6,5 @@ pub struct Event {
     pub name: String,
     pub created_date: chrono::NaiveDateTime,
     pub active: bool,
+    pub platform_id: i64,
 }

@@ -19,5 +19,16 @@ url = http://localhost:3000/platform/1
 url = http://localhost:3000/platform/10
 EOF
 
-curl --parallel --parallel-immediate --parallel-max 3 --config websites.txt
+curl --parallel --parallel-immediate --parallel-max 10 --config websites.txt
+```
+
+### Add event 
+
+``` bash
+curl --request PUT \
+  --url http://localhost:3000/event/input/ \
+  --header 'Content-Type: application/x-www-form-urlencoded' \
+  --data name=test2_123 \
+  --data active=true \
+  --data platform_id=2
 ```

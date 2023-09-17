@@ -1,3 +1,5 @@
+use tracing::debug;
+
 use crate::state::SqlPool;
 
 use super::domain::Event;
@@ -17,7 +19,7 @@ impl EventRepository {
         // Prepare a SQL statement to find the event by its id
         let event: Event = sqlx::query_as!(
             Event,
-            "select id, active, name, created_date from events where id = ?",
+            "select id, active, name, created_date, platform_id from events where id = ?",
             id
         )
         .fetch_one(&self.connection)
@@ -32,7 +34,7 @@ impl EventRepository {
         // Prepare a SQL statement to find the event by its id
         let events: Vec<Event> = sqlx::query_as!(
             Event,
-            "select id, active, name, created_date from events where platform_id = ?",
+            "select id, active, name, created_date, platform_id from events where platform_id = ?",
             id
         )
         .fetch_all(&self.connection)
@@ -40,5 +42,21 @@ impl EventRepository {
 
         // Return the event if found
         Ok(events)
+    }
+
+    // Find a event by its id
+    pub async fn insert_event(&self, event: Event) -> anyhow::Result<()> {
+        // not using the macro here.
+        let tx = self.connection.begin().await?;
+        let row = sqlx::query("insert into events (active, name, platform_id) values (?, ?, ?)")
+            .bind(event.active)
+            .bind(event.name)
+            .bind(event.platform_id)
+            .execute(&self.connection)
+            .await?;
+        debug!("inserted event: {:?}", row);
+        tx.commit().await?;
+
+        Ok(())
     }
 }

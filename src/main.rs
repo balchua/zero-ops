@@ -1,6 +1,9 @@
 use std::net::SocketAddr;
 
-use axum::{routing::get, Router};
+use axum::{
+    routing::{get, post, put},
+    Router,
+};
 
 use tracing::info;
 
@@ -26,6 +29,7 @@ async fn main() {
     // build our application with a route
     let app = Router::new()
         .route("/event/:event_id", get(events::routes::show_event))
+        .route("/event/input/", put(events::routes::add_event))
         .route(
             "/platform/:platform_id",
             get(platform::routes::show_platform),
