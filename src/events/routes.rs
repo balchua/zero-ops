@@ -54,7 +54,7 @@ pub async fn show_event(
 pub async fn add_event(
     app_state: State<AppState>,
     Form(event_input): Form<EventInput>,
-) -> StatusCode {
+) -> (StatusCode, String) {
     let e = event_input;
     let event = Event {
         id: 0,
@@ -66,13 +66,13 @@ pub async fn add_event(
     let result = app_state.event_store.insert_event(event).await;
 
     match result {
-        Ok(_) => {
-            info!("event added");
-            StatusCode::OK
+        Ok(r) => {
+            info!("event added, rowid: {}", r);
+            (StatusCode::OK, r)
         }
         Err(err) => {
             error!("event not added: {}", err);
-            StatusCode::BAD_REQUEST
+            (StatusCode::BAD_REQUEST, "event not added".to_string())
         }
     }
 }

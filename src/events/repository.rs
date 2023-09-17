@@ -45,7 +45,7 @@ impl EventRepository {
     }
 
     // Find a event by its id
-    pub async fn insert_event(&self, event: Event) -> anyhow::Result<()> {
+    pub async fn insert_event(&self, event: Event) -> anyhow::Result<String> {
         // not using the macro here.
         let tx = self.connection.begin().await?;
         let row = sqlx::query("insert into events (active, name, platform_id) values (?, ?, ?)")
@@ -54,9 +54,9 @@ impl EventRepository {
             .bind(event.platform_id)
             .execute(&self.connection)
             .await?;
-        debug!("inserted event: {:?}", row);
+        debug!("inserted event: {}", row.last_insert_rowid());
         tx.commit().await?;
 
-        Ok(())
+        Ok(row.last_insert_rowid().to_string())
     }
 }
