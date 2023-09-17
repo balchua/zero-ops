@@ -7,10 +7,6 @@ use tracing::{error, info};
 
 use crate::state::AppState;
 
-pub struct EventRoutes {}
-
-impl EventRoutes {}
-
 pub async fn show_event(
     Path(event_id): Path<i32>,
     State(app_state): State<AppState>,
