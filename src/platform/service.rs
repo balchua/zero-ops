@@ -1,17 +1,22 @@
+use std::sync::Arc;
+
 use tracing::info;
 
-use crate::events::repository::EventRepository;
+use crate::events::repository::EventRepositoryTrait;
 
-use super::{domain::Platform, repository::PlatformRepository};
+use super::{domain::Platform, repository::PlatformRepositoryTrait};
 
 #[derive(Clone)]
 pub struct PlatformService {
-    pub platform_repo: PlatformRepository,
-    pub event_repo: EventRepository,
+    pub platform_repo: Arc<dyn PlatformRepositoryTrait + Send + Sync>,
+    pub event_repo: Arc<dyn EventRepositoryTrait + Send + Sync>,
 }
 
 impl PlatformService {
-    pub fn new(platform_repo: PlatformRepository, event_repo: EventRepository) -> Self {
+    pub fn new(
+        platform_repo: Arc<dyn PlatformRepositoryTrait + Send + Sync>,
+        event_repo: Arc<dyn EventRepositoryTrait + Send + Sync>,
+    ) -> Self {
         PlatformService {
             platform_repo,
             event_repo,

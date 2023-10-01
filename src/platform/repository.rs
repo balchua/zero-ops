@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 use crate::state::SqlPool;
 
 use super::domain::Platform;
@@ -7,13 +9,15 @@ pub struct PlatformRepository {
     connection: SqlPool,
 }
 
-impl PlatformRepository {
-    pub fn new(conn: SqlPool) -> Self {
-        PlatformRepository { connection: conn }
-    }
+#[async_trait]
+pub trait PlatformRepositoryTrait {
+    async fn find_by_id(&self, id: i32) -> anyhow::Result<Platform>;
+}
 
+#[async_trait]
+impl PlatformRepositoryTrait for PlatformRepository {
     // Find a platform by its id
-    pub async fn find_by_id(&self, id: i32) -> anyhow::Result<Platform> {
+    async fn find_by_id(&self, id: i32) -> anyhow::Result<Platform> {
         // Prepare a SQL statement to find the platform by its id
         // not using macro here.
         let p = sqlx::query_as(
@@ -28,5 +32,11 @@ impl PlatformRepository {
 
         // Return the platform if found
         Ok(p)
+    }
+}
+
+impl PlatformRepository {
+    pub fn new(conn: SqlPool) -> Self {
+        PlatformRepository { connection: conn }
     }
 }
