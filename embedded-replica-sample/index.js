@@ -1,7 +1,17 @@
 import Database from "libsql";
 import reader from "readline-sync";
+import fs from "fs";
+
+
+const path = "../data/users.db";
+
+if (fs.existsSync(path)) {
+    fs.unlinkSync(path);
+}
+
 
 const url = "http://localhost:8080";
+
 // if (!url) {
 //     throw new Error("Environment variable LIBSQL_URL is not set.");
 // }
