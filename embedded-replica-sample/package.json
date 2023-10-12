@@ -1,0 +1,18 @@
+{
+    "name": "libsql-example",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "run": "node index.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "libsql": "^0.1.28",
+        "readline-sync": "^1.4.10"
+    }
+}

@@ -6,12 +6,12 @@ variable "spaces_secret_access_key" {}
 
 variable "bucket_name" {
   type    = string
-  default = "my-zero-ops"
+  default = "my-zero-ops-1"
 }
 
 variable "region" {
   type    = string
-  default = "sgp1"
+  default = "nyc3"
 }
 
 variable "force_destroy" {
