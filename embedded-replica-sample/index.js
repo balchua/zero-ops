@@ -9,6 +9,11 @@ if (fs.existsSync(path)) {
     fs.unlinkSync(path);
 }
 
+if (fs.existsSync(path)) {
+    process.exit(1);
+}
+
+
 
 const url = "http://localhost:8080";
 
