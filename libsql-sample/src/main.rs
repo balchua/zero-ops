@@ -52,19 +52,19 @@ async fn main() -> Result<()> {
 
     let mut statements = Vec::with_capacity(10000);
     let start = Instant::now();
-    for i in 1..=1000 {
+    for i in 1..=1000000 {
         let stmt = Statement::with_args(
             "INSERT INTO address (user_id, name) VALUES (?, ?) ON CONFLICT do nothing",
             &["1", random_string::generate(10, charset).as_str()],
         );
         statements.push(stmt);
-        if i % 100 == 0 {
+        if i % 10000 == 0 {
             println!("batch inserting");
-            let _ = db.batch(statements).await?;
+            let r = db.batch(statements).await?;
+            println!("Rows batch inserted: {:?}", r.len());
 
             // reinitialize the statements
             statements = Vec::with_capacity(10000);
-            println!("statement vector size {:?}", statements.len());
         }
     }
 
