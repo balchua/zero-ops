@@ -2,6 +2,7 @@ use anyhow::Result;
 use libsql_client::{Client, Statement};
 use random_string;
 use std::time::{Duration, Instant};
+use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -50,21 +51,22 @@ async fn main() -> Result<()> {
     let charset = "abcdefghijklmnopqrstuvwxyz1234567890@._";
     //add a lifetime in statement
 
-    let mut statements = Vec::with_capacity(10000);
+    let mut statements = Vec::with_capacity(100);
     let start = Instant::now();
-    for i in 1..=1000000 {
+    for i in 1..=5000000 {
         let stmt = Statement::with_args(
             "INSERT INTO address (user_id, name) VALUES (?, ?) ON CONFLICT do nothing",
             &["1", random_string::generate(10, charset).as_str()],
         );
         statements.push(stmt);
-        if i % 10000 == 0 {
+        if i % 100 == 0 {
             println!("batch inserting");
             let r = db.batch(statements).await?;
             println!("Rows batch inserted: {:?}", r.len());
 
             // reinitialize the statements
-            statements = Vec::with_capacity(10000);
+            statements = Vec::with_capacity(100);
+            sleep(Duration::from_millis(100)).await;
         }
     }
 

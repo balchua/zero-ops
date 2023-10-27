@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "libsql-server.fullname" . }}
+  labels:
+    {{- include "libsql-server.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "libsql-server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "libsql-server.labels" . | nindent 8 }}
+	{{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "libsql-server.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ["/bin/sqld"]
+          args:
+            - --enable-bottomless-replication 
+            - --disable-default-namespace 
+            - --checkpoint-interval-s
+            - "15"
+            - --http-listen-addr 
+            - "0.0.0.0:8080"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: http
+          readinessProbe:
+            tcpSocket:
+              port: http
+          env:
+          # - name: LIBSQL_BOTTOMLESS_AWS_ACCESS_KEY_ID
+          #   value: EYS446M3KJG65H1SF1V4
+          # - name: LIBSQL_BOTTOMLESS_AWS_SECRET_ACCESS_KEY
+          #   value: xsZteJ8vYSxc1tWIkDJl3mw8oFL9FGEgyCzV3GvX
+          - name: LIBSQL_BOTTOMLESS_AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "libsql-server.fullname" . }}
+                key: s3AccessKey             
+          - name: LIBSQL_BOTTOMLESS_AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "libsql-server.fullname" . }}
+                key: s3SecretKey
+          - name: LIBSQL_BOTTOMLESS_BUCKET
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "libsql-server.fullname" . }}
+                key: bottomless_bucket
+          - name: LIBSQL_BOTTOMLESS_ENDPOINT
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "libsql-server.fullname" . }}
+                key: bottomless_endpoint
+          - name: LIBSQL_BOTTOMLESS_AWS_DEFAULT_REGION
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "libsql-server.fullname" . }}
+                key: bottomless_aws_default_region
+          - name: RUST_LOG
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "libsql-server.fullname" . }}
+                key: rust_logs
+          - name: SQLD_NODE
+            valueFrom:
+              configMapKeyRef:
+                name: {{ include "libsql-server.fullname" . }}
+                key: sqld_node
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

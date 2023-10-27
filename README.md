@@ -113,7 +113,29 @@ docker run --rm --name zero-ops --env-file .env -p 8080:8080 -v ./sqld-data:/var
 or
 
 ``` bash
-docker run --rm --name zero-ops --env-file .env -p 8080:8080 -it ghcr.io/libsql/sqld:main /bin/sqld --enable-bottomless-replication --disable-default-namespace --checkpoint-interval-s 15
+docker run --rm --name zero-ops --env-file .env -p 8080:8080 -it ghcr.io/tursodatabase/libsql-server:main /bin/sqld --enable-bottomless-replication --disable-default-namespace --checkpoint-interval-s 15
+```
+
+Start a replica server
+
+``` bash
+docker run --rm --name zero-ops-replica -e SQLD_NODE=replica -e RUST_LOG=debug -e SQLD_PRIMARY_URL=http://192.168.2.24:8080 -p 8081:8080 -it ghcr.io/libsql/sqld:main
+```
+
+Using Helm, all the secrets defined in the values.yaml file are fake, so no need to worry about it.
+
+``` bash
+cd charts/libsql-server
+
+helm upgrade --install --create-namespace --namespace libsql-server libsql-server .
+```
+
+Cleanup
+
+``` bash
+cd charts/libsql-server
+
+helm --namespace libsql-server uninstall libsql-server
 ```
 ### Restore
 
@@ -131,5 +153,5 @@ bottomless-cli --endpoint $LIBSQL_BOTTOMLESS_ENDPOINT -b $LIBSQL_BOTTOMLESS_BUCK
 ``` bash
 curl -d '{"statements": ["CREATE TABLE IF NOT EXISTS test4(rname)"]}' 127.0.0.1:8080
 curl -d '{"statements": ["INSERT INTO test4 VALUES (\"test4\")"]}' 127.0.0.1:8080
-curl -d '{"statements": ["SELECT count(*) FROM test4"]}' 127.0.0.1:8080
+curl -d '{"statements": ["SELECT count(1) FROM address"]}' 127.0.0.1:8080
 ```
