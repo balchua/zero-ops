@@ -55,10 +55,6 @@ spec:
             tcpSocket:
               port: http
           env:
-          # - name: LIBSQL_BOTTOMLESS_AWS_ACCESS_KEY_ID
-          #   value: EYS446M3KJG65H1SF1V4
-          # - name: LIBSQL_BOTTOMLESS_AWS_SECRET_ACCESS_KEY
-          #   value: xsZteJ8vYSxc1tWIkDJl3mw8oFL9FGEgyCzV3GvX
           - name: LIBSQL_BOTTOMLESS_AWS_ACCESS_KEY_ID
             valueFrom:
               secretKeyRef:
